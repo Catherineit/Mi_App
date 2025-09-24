@@ -19,8 +19,8 @@ class FilterMenuButton extends StatelessWidget {
       onSelected: onChanged,
       itemBuilder: (_)=> const [
         PopupMenuItem(value: TaskFilter.all, child: Text("Todas")),
-        PopupMenuItem(value: TaskFilter.all, child: Text("Pendientes")),
-        PopupMenuItem(value: TaskFilter.all, child: Text("Completas")),
+        PopupMenuItem(value: TaskFilter.pending, child: Text("Pendientes")),
+        PopupMenuItem(value: TaskFilter.done, child: Text("Completas")),
       ],
       icon: const Icon(Icons.filter_list)
     );

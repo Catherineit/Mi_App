@@ -46,8 +46,8 @@ class _TaskScreenState extends State<TaskScreen> {
           floatingActionButton: NewTaskFab(
             onSubmit: (title, note, due) =>
                 _ctrl.add(title, note: note, due: due),
-            onCreated: (ctx) => ScaffoldMessenger.of(
-              ctx,
+            onCreated: () => ScaffoldMessenger.of(
+              context,
             ).showSnackBar(const SnackBar(content: Text("Tarea Creada"))),
           ),
           body: SafeArea(

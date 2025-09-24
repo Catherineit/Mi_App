@@ -1,7 +1,7 @@
 import 'package:app_tareas/widgets/new_task_sheet.dart';
 import 'package:flutter/material.dart';
 
-class NewTaskFab extends StatelessWidget {
+class NewTaskFab extends StatefulWidget {
   const NewTaskFab({
     super.key, // Key opcional para identificar el widget en el árbol
     required this.onSubmit, // Callback requerido: recibe (title, note, due)
@@ -12,19 +12,25 @@ class NewTaskFab extends StatelessWidget {
 
   final void Function(String title, String? note, DateTime? due)
   onSubmit; // Define parámetros a propagar
-  final void Function(BuildContext context)?
+  final VoidCallback?
   onCreated; // Callback opcional ejecutado si el sheet retorna éxito
   final String labelText; // Texto visible en el FAB
   final IconData icon; // Ícono visible en el FAB
 
   @override
+  State<NewTaskFab> createState() => _NewTaskFabState();
+}
+
+class _NewTaskFabState extends State<NewTaskFab> {
+  @override
   Widget build(BuildContext context) {
     return FloatingActionButton.extended(
-      icon: Icon(icon),
-      label: Text(labelText),
+      icon: Icon(widget.icon),
+      label: Text(widget.labelText),
       onPressed: () async {
+        final currentContext = context;
         final created = await showModalBottomSheet(
-          context: context,
+          context: currentContext,
           isScrollControlled: true,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -38,14 +44,14 @@ class NewTaskFab extends StatelessWidget {
             ),
             child: NewTaskSheet(
               onSubmit: (title, note, due) {
-                onSubmit(title, note, due);
+                widget.onSubmit(title, note, due);
                 Navigator.pop(ctx, true);
               },
             ),
           ),
         );
-        if ((created ?? false) && onCreated != null) {
-          onCreated!(context);
+        if ((created ?? false) && widget.onCreated != null) {
+          if (mounted) widget.onCreated!();
         }
       },
     );
