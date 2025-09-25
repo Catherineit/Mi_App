@@ -83,4 +83,12 @@ class TaskController extends ChangeNotifier {
     _tasks.remove(t);
     notifyListeners();
   }
+
+  // Restaura una tarea en una posición específica (para funcionalidad de Undo)
+  void restoreTask(Task task, int index) {
+    // Asegurar que el índice esté dentro del rango válido
+    final clampedIndex = index.clamp(0, _tasks.length);
+    _tasks.insert(clampedIndex, task);
+    notifyListeners();
+  }
 }

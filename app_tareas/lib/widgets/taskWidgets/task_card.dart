@@ -1,5 +1,4 @@
 import 'package:app_tareas/models/task.dart';
-import 'package:app_tareas/widgets/taskWidgets/swipe_bg.dart';
 import 'package:flutter/material.dart';
 
 class TaskCard extends StatelessWidget {  // Tarjeta individual para una tarea
@@ -25,11 +24,49 @@ class TaskCard extends StatelessWidget {  // Tarjeta individual para una tarea
     final k = itemKey ?? '${task.title}-${task.hashCode}'; // Clave única para Dismissible
     return Dismissible(
       key: ValueKey(k),
-      background: SwipeBg(alineacion: Alignment.centerLeft, color: swipeColor), // Fondo al deslizar a la izquierda
-      secondaryBackground: SwipeBg( // Fondo al deslizar a la derecha
-        alineacion: Alignment.centerRight, // Alineación a la derecha
-        color: swipeColor, // Color del fondo
+      // Solo permitir swipe hacia la izquierda para eliminar
+      direction: DismissDirection.endToStart,
+      background: Container(), // Sin fondo para swipe derecha
+      secondaryBackground: Container( // Fondo para swipe izquierda (eliminar)
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.red.shade600,
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Colors.red.shade400,
+              Colors.red.shade600,
+            ],
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.delete_outline,
+              color: Colors.white,
+              size: 32,
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Eliminar',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
+      // Configurar umbral para activar el dismiss
+      dismissThresholds: const {
+        DismissDirection.endToStart: 0.3,
+      },
       onDismissed: (_) => onDismissed(), // Acción al completar el deslizamiento
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // Espaciado entre tarjetas

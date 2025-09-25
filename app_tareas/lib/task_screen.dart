@@ -1,4 +1,5 @@
 import 'package:app_tareas/controllers/task_contoller.dart';
+import 'package:app_tareas/models/task.dart';
 import 'package:app_tareas/utils/date_utils.dart';
 import 'package:app_tareas/widgets/taskWidgets/empty_state.dart';
 import 'package:app_tareas/widgets/taskWidgets/filter_chips_row.dart';
@@ -28,6 +29,193 @@ class _TaskScreenState extends State<TaskScreen> {
   void dispose() {
     _ctrl.dispose();
     super.dispose();
+  }
+
+  // Método para mostrar confirmación de eliminación
+  void _showDeleteConfirmation(BuildContext context, Task task) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.delete_outline,
+                color: Theme.of(context).colorScheme.error,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text('Eliminar Tarea'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '¿Estás seguro de que quieres eliminar esta tarea?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey.shade300,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.task_alt,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        task.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _deleteTaskWithUndo(context, task);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: const Icon(Icons.delete, size: 18),
+              label: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Método para eliminar tarea con opción de deshacer
+  void _deleteTaskWithUndo(BuildContext context, Task task) {
+    // Guardar el índice original de la tarea para restaurarla en la misma posición
+    final originalIndex = _ctrl.tasks.indexOf(task);
+    
+    // Eliminar la tarea
+    _ctrl.remove(task);
+
+    // Mostrar SnackBar con opción de deshacer
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        content: Row(
+          children: [
+            Icon(
+              Icons.delete_outline,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Tarea eliminada',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    task.title.length > 30 
+                        ? '${task.title.substring(0, 30)}...' 
+                        : task.title,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'DESHACER',
+          textColor: Colors.white,
+          backgroundColor: Colors.white.withOpacity(0.2),
+          onPressed: () {
+            // Restaurar la tarea en su posición original
+            _ctrl.restoreTask(task, originalIndex);
+            
+            // Mostrar confirmación de restauración
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: Colors.green,
+                content: Row(
+                  children: [
+                    const Icon(
+                      Icons.restore,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Tarea restaurada',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+        ),
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
   }
 
   @override
@@ -111,12 +299,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       : TaskListView(
                           items: items,
                           onToggle: (t, v) => _ctrl.toggle(t, v),
-                          onDelete: (t) {
-                            _ctrl.remove(t);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Tarea Eliminada")),
-                            );
-                          },
+                          onDelete: (t) => _showDeleteConfirmation(context, t),
                           dateFormatter: formatShortDate,
                           swipeColor: Theme.of(context).colorScheme.primary,
                         ),
