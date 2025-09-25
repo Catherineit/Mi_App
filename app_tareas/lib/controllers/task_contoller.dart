@@ -8,12 +8,12 @@ class TaskController extends ChangeNotifier {
   // Lista privada de tareas iniciales (3 de ejemplo)
   final List<Task> _tasks = [
     Task(
-      title: 'Revisar enunciado de evaluación',
-      note: 'Sección B',
+      title: 'Revisar Notas de Examen',
+      note: 'Verificar las calificaciones en el sistema',
       due: DateTime.now().add(const Duration(days: 1)), // fecha límite mañana
     ),
-    Task(title: 'Subir rúbrica a Aula', done: true), // tarea ya completada
-    Task(title: 'Responder correos de alumnos'),
+    Task(title: 'Subir trabajos Pendientes', done: true), // tarea ya completada
+    Task(title: 'Crear Material de Estudio'),
   ];
 
   // Texto para búsqueda

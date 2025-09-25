@@ -45,12 +45,12 @@ class _NewTaskSheetState extends State<NewTaskSheet> {
   @override
   void initState() {
     super.initState();
-    _titleCtrl = TextEditingController(text: widget.initialTitle);
+    _titleCtrl = TextEditingController(text: widget.initialTitle); 
     _noteCtrl = TextEditingController(text: widget.initialNote ?? "");
     _due = widget.initialDue;
   }
 
-  Future<void> _pickDueDate() async {
+  Future<void> _pickDueDate() async { 
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -138,8 +138,8 @@ class _NewTaskSheetState extends State<NewTaskSheet> {
           const SizedBox(height: 16),
 
           InkWell(
-            onTap: _pickDueDate,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            onTap: _pickDueDate, 
+            borderRadius: const BorderRadius.all(Radius.circular(12)), 
             child: InputDecorator(
               decoration: const InputDecoration(
                 labelText: "Fecha de vencimiento (Opcional)",

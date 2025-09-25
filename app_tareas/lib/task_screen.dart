@@ -37,10 +37,28 @@ class _TaskScreenState extends State<TaskScreen> {
       builder: (_, __) {
         final items = _ctrl.filtered;
         return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.background,
           appBar: AppBar(
-            title: const Text("Tareas"),
+            title: const Text("Mis Tareas"),
+            centerTitle: true,
+            elevation: 0,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.secondary,
+                  ],
+                ),
+              ),
+            ),
             actions: [
-              FilterMenuButton(value: _ctrl.filter, onChanged: _ctrl.setFilter),
+              Container(
+                margin: const EdgeInsets.only(right: 8), 
+                child: FilterMenuButton(value: _ctrl.filter, onChanged: _ctrl.setFilter),
+              ),
             ],
           ),
           floatingActionButton: NewTaskFab(
@@ -50,16 +68,43 @@ class _TaskScreenState extends State<TaskScreen> {
               context,
             ).showSnackBar(const SnackBar(content: Text("Tarea Creada"))),
           ),
-          body: SafeArea(
-            child: Column(
-              children: [
-                SearchField(onChanged: _ctrl.setQuery),
-                FilterChipsRow(
-                  value: _ctrl.filter,
-                  onChanged: _ctrl.setFilter,
-                  color: Colors.red,
-                ),
-                const Divider(height: 1),
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Theme.of(context).colorScheme.background,
+                  Colors.white,
+                ],
+                stops: const [0.0, 0.3],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: SearchField(onChanged: _ctrl.setQuery),
+                  ),
+                  FilterChipsRow(
+                    value: _ctrl.filter,
+                    onChanged: _ctrl.setFilter,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  Container(
+                    height: 1,
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
                 Expanded(
                   child: items.isEmpty
                       ? const EmptyState()
@@ -73,10 +118,11 @@ class _TaskScreenState extends State<TaskScreen> {
                             );
                           },
                           dateFormatter: formatShortDate,
-                          swipeColor: Colors.red,
+                          swipeColor: Theme.of(context).colorScheme.primary,
                         ),
                 ),
-              ],
+                ],
+              ),
             ),
           ),
         );

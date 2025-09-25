@@ -1,28 +1,28 @@
 import 'package:app_tareas/models/task.dart';
 import 'package:flutter/material.dart';
 
-class FilterMenuButton extends StatelessWidget {
-  const FilterMenuButton({
+class FilterMenuButton extends StatelessWidget { // Widget para el botón de menú de filtro
+  const FilterMenuButton({ // Constructor del botón de menú de filtro
     super.key,
-    required this.value,
-    required this.onChanged,
+    required this.value, // Filtro seleccionado actualmente
+    required this.onChanged, // Función para manejar cambios en el filtro
   });
 
-  final TaskFilter value;
-  final ValueChanged<TaskFilter> onChanged;
+  final TaskFilter value; // Filtro seleccionado actualmente
+  final ValueChanged<TaskFilter> onChanged; // Función para manejar cambios en el filtro
 
   @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<TaskFilter>(
-      tooltip: "Filtro",
-      initialValue: value,
-      onSelected: onChanged,
+  Widget build(BuildContext context) { // Construcción del widget
+    return PopupMenuButton<TaskFilter>( // Menú desplegable para seleccionar el filtro
+      tooltip: "Filtro", // Texto de ayuda al pasar el cursor
+      initialValue: value, // Valor inicial del menú
+      onSelected: onChanged, // Llama a la función onChanged cuando se selecciona una opción
       itemBuilder: (_)=> const [
-        PopupMenuItem(value: TaskFilter.all, child: Text("Todas")),
-        PopupMenuItem(value: TaskFilter.pending, child: Text("Pendientes")),
-        PopupMenuItem(value: TaskFilter.done, child: Text("Completas")),
+        PopupMenuItem(value: TaskFilter.all, child: Text("Todas")), // Opción para todas las tareas
+        PopupMenuItem(value: TaskFilter.pending, child: Text("Pendientes")), // Opción para tareas pendientes
+        PopupMenuItem(value: TaskFilter.done, child: Text("Completas")), // Opción para tareas completadas
       ],
-      icon: const Icon(Icons.filter_list)
+      icon: const Icon(Icons.filter_list) // Ícono del botón del menú
     );
   }
 }

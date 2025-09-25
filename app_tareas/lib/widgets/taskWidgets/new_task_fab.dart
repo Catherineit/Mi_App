@@ -21,37 +21,37 @@ class NewTaskFab extends StatefulWidget {
   State<NewTaskFab> createState() => _NewTaskFabState();
 }
 
-class _NewTaskFabState extends State<NewTaskFab> {
+class _NewTaskFabState extends State<NewTaskFab> { // Estado del FAB para nueva tarea
   @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton.extended(
-      icon: Icon(widget.icon),
-      label: Text(widget.labelText),
-      onPressed: () async {
-        final currentContext = context;
-        final created = await showModalBottomSheet(
-          context: currentContext,
-          isScrollControlled: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+  Widget build(BuildContext context) { // Construcción del widget
+    return FloatingActionButton.extended( // FAB extendido con ícono y texto
+      icon: Icon(widget.icon), // Ícono del FAB 
+      label: Text(widget.labelText), // Texto del FAB
+      onPressed: () async {  // Acción al presionar el FAB
+        final currentContext = context; // Contexto actual para el modal
+        final created = await showModalBottomSheet( // Muestra el modal para nueva tarea
+          context: currentContext, // Contexto para el modal
+          isScrollControlled: true, // Permite que el modal ocupe más espacio
+          shape: const RoundedRectangleBorder( // Bordes redondeados en la parte superior
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)), // Radio de los bordes
           ),
-          builder: (ctx) => Padding(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              bottom: 16 + MediaQuery.of(ctx).viewInsets.bottom,
+          builder: (ctx) => Padding( // Padding para evitar solapamiento con el teclado
+            padding: EdgeInsets.only( // Espaciado dinámico
+              left: 16, // Espacio a la izquierda
+              right: 16, // Espacio a la derecha
+              top: 12, // Espacio arriba
+              bottom: 16 + MediaQuery.of(ctx).viewInsets.bottom, // Espacio abajo considerando el teclado
             ),
-            child: NewTaskSheet(
-              onSubmit: (title, note, due) {
-                widget.onSubmit(title, note, due);
-                Navigator.pop(ctx, true);
-              },
+            child: NewTaskSheet( // Widget para crear una nueva tarea
+              onSubmit: (title, note, due) { // Callback al enviar la tarea
+                widget.onSubmit(title, note, due); // Llama al callback del widget padre
+                Navigator.pop(ctx, true); // Cierra el modal y retorna éxito
+              }, 
             ),
           ),
         );
-        if ((created ?? false) && widget.onCreated != null) {
-          if (mounted) widget.onCreated!();
+        if ((created ?? false) && widget.onCreated != null) { // Si se creó y hay callback
+          if (mounted) widget.onCreated!(); // Llama al callback de creación
         }
       },
     );
