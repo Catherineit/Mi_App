@@ -32,10 +32,10 @@ class TaskController extends ChangeNotifier {
   // Devuelve el filtro actual
   TaskFilter get filter => _filter;
 
-  // Devuelve la lista de tareas filtradas por búsqueda y filtro
+  // Devuelve la lista de tareas filtradas por búsqueda y filtro, ordenadas por fecha
   List<Task> get filtered {
     final q = _query.trim().toLowerCase(); // texto de búsqueda en minúsculas
-    return _tasks.where((t) {
+    final filteredTasks = _tasks.where((t) {
       // Filtra por estado
       final byFilter = switch (_filter) {
         TaskFilter.all => true,    // todas
@@ -50,6 +50,11 @@ class TaskController extends ChangeNotifier {
       // La tarea pasa si cumple ambos filtros
       return byFilter && byQuery;
     }).toList();
+
+    // Ordenar tareas por fecha de forma ascendente (comportamiento por defecto)
+    _sortTasksByDate(filteredTasks);
+    
+    return filteredTasks;
   }
 
   // ----- Mutaciones (acciones que cambian datos) -----
@@ -89,6 +94,41 @@ class TaskController extends ChangeNotifier {
     // Asegurar que el índice esté dentro del rango válido
     final clampedIndex = index.clamp(0, _tasks.length);
     _tasks.insert(clampedIndex, task);
+    notifyListeners();
+  }
+
+  // ----- Métodos privados de ordenamiento -----
+
+  // Ordena una lista de tareas por fecha de forma ascendente
+  void _sortTasksByDate(List<Task> tasks) {
+    tasks.sort((a, b) {
+      // Primero, separar tareas completadas de las pendientes
+      // Las tareas completadas van al final
+      if (a.done != b.done) {
+        return a.done ? 1 : -1; // Tareas completadas al final
+      }
+
+      // Luego ordenar por fecha dentro de cada grupo
+      final dateA = a.due;
+      final dateB = b.due;
+
+      // Si ninguna tiene fecha, mantener orden actual
+      if (dateA == null && dateB == null) {
+        return 0;
+      }
+
+      // Las tareas sin fecha van al final de su grupo respectivo
+      if (dateA == null) return 1;
+      if (dateB == null) return -1;
+
+      // Ordenar por fecha ascendente (fechas más próximas primero)
+      return dateA.compareTo(dateB);
+    });
+  }
+
+  // Método público para reordenar todas las tareas (útil para refrescar el orden)
+  void sortAllTasks() {
+    _sortTasksByDate(_tasks);
     notifyListeners();
   }
 }
