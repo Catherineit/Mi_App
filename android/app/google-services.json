@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1029135804769",
+    "project_id": "mi-app-ef3d3",
+    "storage_bucket": "mi-app-ef3d3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029135804769:android:2ad6643998300154e3fd20",
+        "android_client_info": {
+          "package_name": "com.example.app_tareas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv7qlq-X8nxhpRLSlzM5pKlzkImF07ero"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
