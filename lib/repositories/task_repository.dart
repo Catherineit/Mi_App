@@ -3,7 +3,9 @@ import '../models/task.dart';
 
 enum TaskFilter { all, pending, done }
 
+// Repositorio para manejar las tareas en Firestore
 class TaskRepository { // Repositorio para manejar las tareas en Firestore
+  // Constructor que acepta una instancia de Firestore y la ruta de la colección
     TaskRepository({FirebaseFirestore? db, String collectionPath = 'tasks'}) 
         : _db = db ?? FirebaseFirestore.instance, 
           _collectionPath = collectionPath;
@@ -93,6 +95,13 @@ class TaskRepository { // Repositorio para manejar las tareas en Firestore
             note: (data['note'] as String?)?.trim(),
             due: (data['due'] is Timestamp ? (data['due'] as Timestamp).toDate() : null),
         );
+    }
+
+    // Marca una tarea como completada o no completada
+    Future<void> setDone(String id, bool done) async {
+        await _tasksCollection.doc(id).update({
+            'done': done,
+        });
     }
 }
 

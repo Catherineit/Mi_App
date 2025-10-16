@@ -10,16 +10,19 @@ import '../firebase_options.dart';
 
 // Controlador que maneja la lista de tareas y la lógica
 class TaskController extends ChangeNotifier {
-  // Lista privada de tareas iniciales (3 de ejemplo)
-  final List<Task> _tasks = [
-    Task(
-      title: 'Revisar Notas de Examen',
-      note: 'Verificar las calificaciones en el sistema',
-      due: DateTime.now().add(const Duration(days: 1)), // fecha límite mañana
-    ),
-    Task(title: 'Subir trabajos Pendientes', done: true), // tarea ya completada
-    Task(title: 'Crear Material de Estudio'),
-  ];
+  // Repositorio para manejar persistencia
+  final TaskRepository _repository;
+  // Lista interna de tareas
+  List<Task> _tasks = [];
+  // Mapa para relacionar tareas con sus IDs de Firebase
+  final Map<Task, String> _taskIds = {};
+
+  // Constructor que acepta un repositorio opcional
+  TaskController({TaskRepository? repository})
+      : _repository = repository ?? TaskRepository() {
+    // Cargar tareas de forma asíncrona
+    _loadTasks();
+  }
 
   // Texto para búsqueda
   String _query = '';
@@ -61,6 +64,37 @@ class TaskController extends ChangeNotifier {
     
     return filteredTasks;
   }
+  // Carga inicial de tareas
+  Future<void> _loadTasks() async {
+    await _reloadFromRepository();
+  }
+
+  // Método público para cargar tareas
+  Future<void> loadTasks() => _reloadFromRepository();
+
+  // Recarga las tareas desde el repositorio
+  Future<void> _reloadFromRepository() async {
+    try {
+      final rows = await _repository.findAll(filter: _filter, query: _query);
+      _tasks.clear();
+      _tasks.addAll(rows.map((r) => r.task));
+
+      _taskIds.clear();
+      _taskIds.addEntries(rows.map((r) => MapEntry(r.task, r.id)));
+      
+      _sortTasksByDate(_tasks);
+      notifyListeners(); // avisa a la UI que hubo un cambio
+    } catch (e) {
+      // En caso de error con Firebase, usar datos locales por defecto
+      _tasks = [
+        Task(title: 'Revisar Notas de Examen', note: 'Verificar las calificaciones en el sistema'),
+        Task(title: 'Estudiar Flutter', note: 'Repasar widgets y navegación'),
+        Task(title: 'Completar Proyecto', note: 'Finalizar la aplicación de tareas'),
+      ];
+      _sortTasksByDate(_tasks);
+      notifyListeners();
+    }
+  }
 
   // ----- Mutaciones (acciones que cambian datos) -----
 
@@ -71,26 +105,78 @@ class TaskController extends ChangeNotifier {
   }
 
   // Cambia el filtro de tareas
-  void setFilter(TaskFilter f) {
+  Future<void> setFilter(TaskFilter f) async {
     _filter = f;
-    notifyListeners();
+    await _reloadFromRepository();
   }
 
-  // Marca o desmarca una tarea como completada
-  void toggle(Task t, bool v) {
-    t.done = v;
+  // Marca o desmarca una tarea como completada y sincroniza con Firebase
+  Future<void> toggleDone(Task task, bool done) async {
+    final id = _taskIds[task];
+    if (id == null) {
+      // Si no tenemos el ID, recargar desde Firebase
+      await _reloadFromRepository();
+      return;
+    }
+    
+    // Actualizar en Firebase
+    await _repository.setDone(id, done);
+    
+    // Actualizar localmente
+    task.done = done;
+    
+    // Reordenar y notificar
+    _sortTasksByDate(_tasks);
     notifyListeners();
   }
 
   // Agrega una nueva tarea al inicio de la lista
-  void add(String title, {String? note, DateTime? due}) {
-    _tasks.insert(0, Task(title: title, note: note, due: due));
-    notifyListeners();
+  Future<void> add(String title, {String? note, DateTime? due}) async {
+    final task = Task(title: title, note: note, due: due);
+    try {
+      await _repository.create(task);
+      await _reloadFromRepository();
+    } catch (e) {
+      // Si falla la persistencia, agregar localmente
+      _tasks.insert(0, task);
+      _sortTasksByDate(_tasks);
+      notifyListeners();
+    }
   }
 
-  // Elimina una tarea de la lista
-  void remove(Task t) {
-    _tasks.remove(t);
+  // Elimina una tarea de la lista y de Firebase
+  Future<void> remove(Task task) async {
+    final id = _taskIds[task]; // Obtener el ID de la tarea
+    if (id == null) { // Si no se encuentra el ID, recargar desde el repositorio
+      await _reloadFromRepository();
+      return;
+    }
+    
+    // Eliminar de Firebase
+    await _repository.delete(id);
+    
+    // Recargar datos actualizados
+    await _reloadFromRepository();
+  }
+
+  // Actualiza una tarea existente en Firebase
+  Future<void> updateTask(Task task, {String? newTitle, String? newNote, DateTime? newDue}) async {
+    final id = _taskIds[task];
+    if (id == null) {
+      await _reloadFromRepository();
+      return;
+    }
+
+    // Actualizar el objeto Task localmente
+    if (newTitle != null) task.title = newTitle;
+    if (newNote != null) task.note = newNote;
+    task.due = newDue; // Permite null para eliminar fecha
+
+    // Actualizar en Firebase
+    await _repository.update(id, task);
+    
+    // Reordenar y notificar
+    _sortTasksByDate(_tasks);
     notifyListeners();
   }
 

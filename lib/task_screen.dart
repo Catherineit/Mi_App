@@ -23,6 +23,10 @@ class _TaskScreenState extends State<TaskScreen> {
   void initState() {
     super.initState();
     _ctrl = TaskController();
+    // Carga las tareas después de que el primer frame se haya renderizado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ctrl.loadTasks();
+    });
   }
 
   @override
@@ -298,7 +302,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       ? const EmptyState()
                       : TaskListView(
                           items: items,
-                          onToggle: (t, v) => _ctrl.toggle(t, v),
+                          onToggle: (t, v) => _ctrl.toggleDone(t, v),
                           onDelete: (t) => _showDeleteConfirmation(context, t),
                           dateFormatter: formatShortDate,
                           swipeColor: Theme.of(context).colorScheme.primary,
